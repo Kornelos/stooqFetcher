@@ -1,11 +1,10 @@
 package com.kornelos.plugins
 
 import com.kornelos.services.StooqService
-import io.ktor.routing.*
-import io.ktor.http.*
 import io.ktor.application.*
+import io.ktor.http.*
 import io.ktor.response.*
-import io.ktor.request.*
+import io.ktor.routing.*
 
 fun Application.configureRouting() {
     // Starting point for a Ktor app:
@@ -15,10 +14,15 @@ fun Application.configureRouting() {
         get("/") {
             call.respondText("UP")
         }
-        get("/api/stooq/{ticker}"){
+        get("/api/stooq/{ticker}") {
             val ticker: String? = call.parameters["ticker"]
             if (ticker != null) {
-                stooqService.getCurrentPrice(ticker)?.let { it1 -> call.respondText(it1) }
+                val price = stooqService.getCurrentPrice(ticker)
+                if (price != null) {
+                    call.respondText(price)
+                } else {
+                    log.info("Price not found for $ticker")
+                }
             }
             call.response.status(HttpStatusCode.BadRequest)
         }

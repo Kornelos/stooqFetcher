@@ -6,12 +6,10 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import kotlinx.coroutines.withTimeout
-import kotlin.time.Duration
 
 class StooqService {
     private val client = HttpClient(CIO)
-    private val priceRegex = Regex("(Kurs).*>([0-9]+\\.[0-9])</span></b>")
+    private val priceRegex = Regex("(Kurs).*>([0-9]+\\.[0-9])</span></b>") // todo: change for more generic one
 
     suspend fun getCurrentPrice(ticker: String): String? {
         val price = priceRegex.find(getSiteBody(ticker))
