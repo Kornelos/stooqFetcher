@@ -9,7 +9,7 @@ import io.ktor.http.*
 
 class StooqService {
     private val client = HttpClient(CIO)
-    private val priceRegex = Regex("(Kurs).*>([0-9]+\\.[0-9])</span></b>") // todo: change for more generic one
+    private val priceRegex = Regex("(Kurs).*>([0-9]+\\.[0-9]+)</span></b>") // todo: change for more generic one
 
     suspend fun getCurrentPrice(ticker: String): String? {
         val price = priceRegex.find(getSiteBody(ticker))
