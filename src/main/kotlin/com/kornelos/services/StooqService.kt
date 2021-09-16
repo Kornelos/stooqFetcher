@@ -9,7 +9,9 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 
 class StooqService {
-    private val client = HttpClient(CIO)
+    private val client = HttpClient(CIO) {
+        install(HttpTimeout)
+    }
     private val priceRegex = Regex("(Kurs).*>([0-9]+\\.[0-9]+)</span></b>") // todo: change for more generic one
 
     private val userAgents = listOf(
@@ -28,7 +30,7 @@ class StooqService {
     }
 
     private suspend fun getSiteBody(ticker: String): String {
-        val response: HttpResponse = client.request("https://stooq.pl/q/?s=$ticker"){
+        val response: HttpResponse = client.request("https://stooq.pl/q/?s=$ticker") {
             method = HttpMethod.Get
             userAgent(generateUserAgent())
             timeout {
@@ -38,8 +40,6 @@ class StooqService {
         }
         return response.receive()
     }
-
-
 
     private fun generateUserAgent(): String {
         return userAgents.random()
