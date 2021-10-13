@@ -34,8 +34,8 @@ class StooqService {
             method = HttpMethod.Get
             userAgent(generateUserAgent())
             timeout {
-                connectTimeoutMillis = 5000
-                requestTimeoutMillis = 50000
+                connectTimeoutMillis = 50000
+                requestTimeoutMillis = 250000
             }
         }
         return response.receive()
