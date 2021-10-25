@@ -8,7 +8,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 
-class StooqService {
+class StooqService: FinanceService {
     private val client = HttpClient(CIO) {
         install(HttpTimeout)
     }
@@ -24,7 +24,7 @@ class StooqService {
         "Mozilla/5.0 (Windows NT 5.1; rv:7.0.1) Gecko/20100101 Firefox/7.0.1"
     )
 
-    suspend fun getCurrentPrice(ticker: String): String? {
+    override suspend fun getCurrentPrice(ticker: String): String? {
         val price = priceRegex.find(getSiteBody(ticker))
         return price?.groupValues?.last()
     }
