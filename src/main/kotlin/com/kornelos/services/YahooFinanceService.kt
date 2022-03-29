@@ -1,6 +1,7 @@
 package com.kornelos.services
 
 import com.google.gson.JsonObject
+import com.kornelos.logger
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -12,47 +13,43 @@ import io.ktor.http.*
 import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
 
-class YahooFinanceService(private val apiKey: String, private val apiUrl: String ) : FinanceService {
+class YahooFinanceService(private val apiKey: String, apiUrl: String) : FinanceService {
+
+    companion object {
+        val logger by logger()
+    }
 
     private val client = HttpClient(CIO) {
         install(HttpTimeout)
         install(JsonFeature)
     }
 
-    private val priceCache = ConcurrentHashMap<String, CachedPrice>()
     private val priceUrl = "$apiUrl/v6/finance/quote"
+    private val priceCache = PriceCache()
 
     override suspend fun getCurrentPrice(ticker: String): String? {
         if (priceCache.isValidCache(ticker)) {
             return priceCache[ticker]!!.price
         }
 
-        val response: HttpResponse = client.request("$priceUrl?symbols=$ticker") {
+        val response: HttpResponse = client.request(priceUrl) {
             method = HttpMethod.Get
             headers {
+                parameter("symbols", ticker)
                 accept(ContentType.Application.Json)
-                set("X-API-KEY", apiKey)
+                header("X-API-KEY", apiKey)
             }
         }
         return try {
             val result = response.receive<JsonObject>()["quoteResponse"].asJsonObject
             result["result"].asJsonArray.first().asJsonObject["regularMarketPrice"].toString()
         } catch(ex: Exception){
-            //todo log
+            logger.error("Exception while getting price: $ex")
             null
         }
 
     }
 }
-
-private fun ConcurrentHashMap<String, CachedPrice>.isValidCache(ticker: String): Boolean {
-    return this.contains(ticker) && this[ticker]!!.createdAt.isBefore(LocalDateTime.now().minusDays(1))
-}
-
-data class CachedPrice(
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-    val price: String
-)
 
 
 
