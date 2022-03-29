@@ -42,10 +42,12 @@ class CryptoService(private val apiKey: String, apiUrl: String) : FinanceService
                 headers {
                     accept(ContentType.Application.Json)
                     header("X-CMC_PRO_API_KEY", apiKey)
+                    parameter("limit", 200)
+                    parameter("sort", "market_cap")
                 }
             }
             val result = response.receive<JsonObject>()["data"].asJsonArray
-            result.map { priceCache[it.asJsonObject["symbol"].toString()] = it.asJsonObject["quote"].asJsonObject["USD"].asJsonObject["price"].toString() }
+            result.map { priceCache[it.asJsonObject["symbol"].asString] = it.asJsonObject["quote"].asJsonObject["USD"].asJsonObject["price"].toString() }
         } catch (ex: Exception) {
             logger.error("Exception while refreshing cache: $ex")
         }

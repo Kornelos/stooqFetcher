@@ -28,25 +28,22 @@ fun Application.configureRouting() {
         }
         get("/api/stooq/{ticker}") {
             val ticker = call.parameters["ticker"]
-            val price = callService(stooqService, ticker)
+            val price = ticker?.let {stooqService.getCurrentPrice(it) }
             price?.let { call.respondText(it) } ?: log.info("Price not found for $ticker")
             call.response.status(HttpStatusCode.BadRequest)
         }
         get("/api/price/{ticker}") {
             val ticker = call.parameters["ticker"]
-            val price = callService(compositeService, ticker)
+            val price = ticker?.let {compositeService.getCurrentPrice(it) }
             price?.let { call.respondText(it) } ?: log.info("Price not found for $ticker")
             call.response.status(HttpStatusCode.BadRequest)
         }
 
         get("/api/crypto/{ticker}") {
             val ticker = call.parameters["ticker"]
-            val price = callService(cryptoService, ticker)
+            val price = ticker?.let {cryptoService.getCurrentPrice(it) }
             price?.let { call.respondText(it) } ?: log.info("Price not found for $ticker")
             call.response.status(HttpStatusCode.BadRequest)
         }
     }
-
 }
-
-suspend fun callService(service: FinanceService, ticker: String?): String? = ticker?.let { service.getCurrentPrice(it) }
